@@ -22,6 +22,8 @@ public enum BoardSquare {
 	
 	@Override
 	public String toString() {return label;}
+
+    public int getRow() {return Integer.valueOf(label.substring(1));}
 	
 	public int fileNum() {
 		return label.charAt(0) - 'a' + 1;

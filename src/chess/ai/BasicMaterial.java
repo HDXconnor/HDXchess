@@ -1,10 +1,10 @@
 package chess.ai;
 
-import java.util.EnumMap;
-
 import chess.core.BoardSquare;
 import chess.core.ChessPiece;
 import chess.core.Chessboard;
+
+import java.util.EnumMap;
 
 
 public class BasicMaterial implements BoardEval {

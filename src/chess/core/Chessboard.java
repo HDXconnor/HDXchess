@@ -11,14 +11,16 @@ public class Chessboard {
 	private Move lastMove = null;
 	private int numMoves = 0;
 	private Chessboard parent;
+    HashMap<String, BoardSquare> boardSquares;
+    HashMap<Integer, String> columns;
 	
 	public Chessboard() {
 		turn = PieceColor.WHITE;
-		
+
 		this.sides = new EnumMap<PieceColor,ChessSide>(PieceColor.class);
 		sides.put(PieceColor.WHITE, ChessSide.makeWhiteStart());
 		sides.put(PieceColor.BLACK, ChessSide.makeBlackStart());
-		
+		setupBoardSquares();
 		parent = null;
 	}
 	
@@ -192,6 +194,90 @@ public class Chessboard {
 		BitBoard whites = sides.get(PieceColor.WHITE).differences(that.sides.get(PieceColor.WHITE));
 		return blacks.union(whites);
 	}
+
+    public String toFEN() {
+        boolean w;
+        String fen = toString();
+        if (fen.contains("WHITE")) {w = true;}
+        else {w = false;}
+        fen = fen.replace("WHITE\n", "");
+        fen = fen.replace("BLACK\n", "");
+        fen = fen.replaceAll("\n", "/");
+        fen = fen.replaceAll("--------", "8");
+        fen = fen.replaceAll("-------", "7");
+        fen = fen.replaceAll("------", "6");
+        fen = fen.replaceAll("-----", "5");
+        fen = fen.replaceAll("----", "4");
+        fen = fen.replaceAll("---", "3");
+        fen = fen.replaceAll("--", "2");
+        fen = fen.replaceAll("-", "1");
+        fen = fen.substring(0, fen.lastIndexOf("/")-1);
+        if (w) {fen = fen.concat(" w");}
+        else {fen = fen.concat(" b");}
+        return fen;
+    }
+    /*public String toFEN() {
+        String fen = "";
+        int column = 1;
+        int row = 8;
+        int emptySpaces = 0;
+        String boardPieces = allPieces().toString();
+        for (int idx = 0; idx < boardPieces.length(); idx++) {
+            char c = boardPieces.charAt(idx);
+            if (c == '1') {
+                addFenSpaces(fen, emptySpaces);
+                emptySpaces = 0;
+                BoardSquare square = getBoardSquare(row, column);
+                ChessPiece type = at(square);
+                if (colorAt(square).equals(getMoverColor())) {//TODO test colors
+                    fen.concat(type.toString().toLowerCase());
+                }
+                else {fen.concat(type.toString());}
+            }
+            else {emptySpaces++;}
+            column++;
+            if (column == 9) {
+                addFenSpaces(fen, emptySpaces);
+                emptySpaces = 0;
+                column = 1;
+                row--;
+                fen.concat("/");
+            }
+        }
+
+        if (getMoverColor().equals(PieceColor.BLACK)) {fen.concat(" b ");}
+        else {fen.concat(" w  ");}
+
+        return fen;
+    }*/
+
+    private BoardSquare getBoardSquare(int row, int column) {
+        String col = columns.get(column);
+        String sqr = col.concat(String.valueOf(row));
+        return boardSquares.get(sqr);
+    }
+
+    private void addFenSpaces(String fen, int emptySpaces) {
+        if (emptySpaces != 0) {
+            fen.concat(String.valueOf(emptySpaces));
+        }
+    }
+
+    private void setupBoardSquares() {
+        boardSquares = new HashMap<String, BoardSquare>();
+        columns = new HashMap<Integer, String>();
+        for (BoardSquare sq : BoardSquare.class.getEnumConstants()) {
+            boardSquares.put(sq.toString(), sq);
+        }
+        columns.put(1, "A");
+        columns.put(2, "B");
+        columns.put(3, "C");
+        columns.put(4, "D");
+        columns.put(5, "E");
+        columns.put(6, "F");
+        columns.put(7, "G");
+        columns.put(8, "H");
+    }
 
 	private Chessboard(Chessboard that) {
 		this.turn = that.turn;

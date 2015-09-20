@@ -5,40 +5,47 @@ import chess.core.Move;
 import chess.core.PieceColor;
 
 public class AlphaBeta extends Searcher {
-    public PieceColor color;
+    public PieceColor playerColor;
 
     @Override
     public MoveScore findBestMove(Chessboard board, BoardEval eval, int depth) {
-        Node node = new Node();
-        color = board.getMoverColor();
+        int parentAlpha = -1;
+        int parentBeta = 1;
+        playerColor = board.getMoverColor();
         setup(board, eval, depth);
-        MoveScore result = evalMoves(board, eval, depth, node);
+        MoveScore result = evalMoves(board, eval, depth, parentAlpha, parentBeta);
         tearDown();
         return result;
     }
 
-    private MoveScore evalMoves(Chessboard board, BoardEval eval, int depth, Node node) {
+    private MoveScore evalMoves(Chessboard board, BoardEval eval, int depth, int alpha, int beta) {
         MoveScore best = null;
-        for (Move m: board.getLegalMoves()) {
-            Node cur = new Node(node.alpha, node.beta);
-            Chessboard next = generate(board, m);
+        int a = alpha;
+        int b = beta;
 
-            MoveScore result = new MoveScore(-evalBoard(next, eval, depth - 1, cur), m);
+        //for each legal move m:
+        for (Move m: board.getLegalMoves()) {
+            //System.out.println("\n" + m.toString());
+            //Generate a successor node (passing down current Alpha-Beta values)
+            Chessboard next = generate(board, m);
+            MoveScore result = new MoveScore(-evalBoard(next, eval, depth - 1, -b, -a), m);
 
             if (best == null || result.getScore() > best.getScore()) {
                 best = result;
             }
-            if (next.getMoverColor().equals(color)) {
-                if (result.getScore() > cur.alpha) {cur.alpha = result.getScore();}
+            if (result.getScore() > a) {
+                a = result.getScore();
             }
-            else if (result.getScore() < node.beta) {cur.beta = result.getScore();}
-            if (cur.alpha >= cur.beta) {return best;}
+            //If Alpha ≥ Beta, exit the loop.
+            if (a >= b) {
+                return best;
+            }
         }
-        //if alpha>beta return best
+        System.out.println("Best: " + best.getMove());
         return best;
     }
 
-    private int evalBoard(Chessboard board, BoardEval eval, int depth, Node node) {
+    private int evalBoard(Chessboard board, BoardEval eval, int depth, int alpha, int beta) {
         if (!board.hasKing(board.getMoverColor()) || board.isCheckmate()) {
             return -eval.maxValue();
         } else if (board.isStalemate()) {
@@ -46,17 +53,7 @@ public class AlphaBeta extends Searcher {
         } else if (depth == 0) {
             return evaluate(board, eval);
         } else {
-            return evalMoves(board, eval, depth, node).getScore();
+            return evalMoves(board, eval, depth, alpha, beta).getScore();
         }
     }
 }
-
-/*
-Initial values for Alpha and Beta are taken from the parent node (-1, 1 for the starting node).
-For each legal move m:
-
-Generate a successor node (passing down current Alpha-Beta values)
-If the current player is the protagonist, and successor's value is greater than Alpha, set Alpha to successor.
-If the current player is the adversary, and successor's value is less than Beta, set Beta to successor.
-If Alpha ≥ Beta, exit the loop.
-*/
