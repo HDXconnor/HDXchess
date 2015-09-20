@@ -43,7 +43,7 @@ public class MoveEvaluator implements BoardEval {
                     total += -2;
                 }
             }
-
+//
             if (values.containsKey(type)) {
                 if (board.colorAt(s).equals(board.getMoverColor())) {
                     total += values.get(type);
