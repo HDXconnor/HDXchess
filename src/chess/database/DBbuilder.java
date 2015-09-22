@@ -9,18 +9,16 @@ public class DBbuilder {
         public static void main(String[] args) {
             Connection conn = openConnection();
             try {
-                //createTable(conn);
-                //populateTable(conn);
+                createTable(conn);
+                populateGamesTable(conn);
 
-                PreparedStatement query = conn.prepareStatement(
-                        "SELECT firstName, lastName, studentID FROM Students WHERE firstName LIKE ?");
-                Scanner in = new Scanner(System.in);
-                while(true) {
-                    System.out.print("student name? ");
-                    query.setString(1, in.nextLine()); // Note JDBC counts from 1!
-                    processQuery(conn, query);
-                }
+//                PreparedStatement query = conn.prepareStatement(
+//                        "SELECT * FROM Games");
+//                processQuery(conn, query);
+
             } catch(SQLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
                 e.printStackTrace();
             } finally {
                 try {
@@ -41,8 +39,8 @@ public class DBbuilder {
             }
 
             try {
-                // Note that the URL below specifies the filename for storing the DB
-                return DriverManager.getConnection("jdbc:sqlite:choir.db");
+                //URL below specifies filename for storing the DB
+                return DriverManager.getConnection("jdbc:sqlite:chessGames.db");
             } catch (SQLException e) {
                 System.err.println("Could not connect to DBMS.");
                 System.exit(-1);
@@ -55,25 +53,27 @@ public class DBbuilder {
 
             stmt.executeUpdate("CREATE TABLE Games(gameNum INTEGER, result TEXT, moves INTEGER)");
             stmt.executeUpdate("CREATE TABLE GameFens(gameNum INTEGER, boardFen TEXT)");
-           System.out.println("Created tables!");
+            //stmt.executeUpdate("CREATE TABLE GameInfo(gameNum INTEGER, whiteRat INTEGER, blackRat INTEGER)");
+            System.out.println("Tables Created!");
         }
 
-        private static void populateTable(Connection conn) throws SQLException, IOException {
+        private static void populateGamesTable(Connection conn) throws SQLException, IOException {
             PreparedStatement insert = conn.prepareStatement(
                     "INSERT INTO Games (gameNum, result, moves) VALUES (?, ?, ?)");
             PGNparser parser = new PGNparser();
             parser.parsePGN("ficsDB.pgn");
 
-//            for (String child : myStudents) {
-//                String[] tokens = child.split(" ");
-//                insert.setString(1, tokens[0]); // note JDBC counts from 1!
-//                insert.setString(2, tokens[1]);
-//                insert.setInt(3, Integer.parseInt(tokens[2]));
-//                int updated = insert.executeUpdate();
-//                if (updated == 0) {
-//                    System.err.println("Failed to insert " + tokens[0]);
-//                }
-//            }
+            for(int i=0; i<parser.getGNlistSize(); ++i){
+                //remember, JDBC counts from 1 not 0
+                insert.setInt(1, parser.getGameNumberList().get(i));
+                insert.setString(2, parser.getGameResultList().get(i));
+                insert.setString(3, parser.getGameMovesList().get(i));
+                int updated = insert.executeUpdate();
+                if (updated == 0){
+                    System.err.println("Failed to insert something");
+                }
+            }
+            System.out.println("Population Successful");
         }
 
         private static void processQuery(Connection conn, PreparedStatement query)
