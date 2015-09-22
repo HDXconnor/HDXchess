@@ -7,7 +7,6 @@ import java.util.EnumMap;
 
 
 public class MoveEvaluator implements BoardEval {
-    private int switch_piece_count = 6;
 	final static int MAX_VALUE = 1000;
 	private EnumMap<ChessPiece,Integer> values = new EnumMap<ChessPiece,Integer>(ChessPiece.class);
     private boolean openingOver = false;
@@ -30,43 +29,37 @@ public class MoveEvaluator implements BoardEval {
     @Override
     public int eval(Chessboard board) {
         int total = 0;
-        if (isSolvedState(board)) {return MAX_VALUE;}
+        //if (isSolvedState(board)) {return MAX_VALUE;}
         for (BoardSquare s: board.allPieces()) {
             ChessPiece type = board.at(s);
-            if (type.equals(ChessPiece.ROOK)) {
-                if (rookInOpenFile(board, s)) {
-                    total += -2;
-                }
-            }
-            else if (type.equals(ChessPiece.PAWN)) {
-                if (pawnIsDoubled(board, s)) {
-                    total += -2;
-                }
-            }
-//
             if (values.containsKey(type)) {
                 if (board.colorAt(s).equals(board.getMoverColor())) {
                     total += values.get(type);
                     total += checkOpenings(board);
-                    switch (switch_piece_count) {
-                        case 1:
+                    switch (type.symbol()) {
+                        case 'P':
                             type.name().equals("PAWN");
-                            pawnChecks();
-                        case 2:
+                            total += pawnChecks(board, s);
+                            break;
+                        case 'R':
                             type.name().equals("ROOK");
-                            rookChecks();
-                        case 3:
+                            total += rookChecks(board, s);
+                            break;
+                        case 'B':
                             type.name().equals("BISHOP");
-                            bishopChecks();
-                        case 4:
+                            total += bishopChecks(board, s);
+                            break;
+                        case 'N':
                             type.name().equals("KNIGHT");
-                            knightChecks();
-                        case 5:
+                            total += knightChecks(board, s);
+                            break;
+                        case 'Q':
                             type.name().equals("QUEEN");
-                            queenChecks();
-                        case 6:
+                            total += queenChecks(board, s);
+                            break;
+                        case 'K':
                             type.name().equals("KING");
-                            kingChecks();
+                            total += kingChecks(board, s);
                     }
                 } else {
                     total -= values.get(type);
@@ -90,24 +83,35 @@ public class MoveEvaluator implements BoardEval {
         return 0;
     }
 
-    private int pawnChecks(){
-        System.out.println("PAWN CHECK");
-        return 0;
+    private int pawnChecks(Chessboard board, BoardSquare sq){
+        int tot = 0;
+        if (pawnIsDoubled(board, sq)) {
+            tot += 2;
+        }
+        return tot;
     }
-    private int rookChecks(){
-        return 0;
+    private int rookChecks(Chessboard board, BoardSquare sq) {
+        int tot = 0;
+        if (rookInOpenFile(board, sq)) {
+            tot += 2;
+        }
+        return tot;
     }
-    private int bishopChecks(){
-        return 0;
+    private int bishopChecks(Chessboard board, BoardSquare sq){
+        int tot = 0;
+        return tot;
     }
-    private int knightChecks(){
-        return 0;
+    private int knightChecks(Chessboard board, BoardSquare sq){
+        int tot = 0;
+        return tot;
     }
-    private int queenChecks(){
-        return 0;
+    private int queenChecks(Chessboard board, BoardSquare sq){
+        int tot = 0;
+        return tot;
     }
-    private int kingChecks(){
-        return 0;
+    private int kingChecks(Chessboard board, BoardSquare sq){
+        int tot = 0;
+        return tot;
     }
 
     @Override
@@ -124,7 +128,7 @@ public class MoveEvaluator implements BoardEval {
 	}
 
     private boolean inPosition(Chessboard board, ArrayList<Chessboard> positions) {
-        PieceColor color = board.getMoverColor().other(); //TODO test colors
+        PieceColor color = board.getMoverColor().other();
         BitBoard boardPieces = board.allPiecesFor(color);
 
         for (Chessboard compPos: positions) {
@@ -133,29 +137,34 @@ public class MoveEvaluator implements BoardEval {
         }
         return false;
     }
-    private boolean isSolvedState(Chessboard board) {
+    /*private boolean isSolvedState(Chessboard board) {
         //if pieces < numMinPieces
         board.toFEN();
         return false; //TODO
-    }
+    }*/
 
     private boolean rookInOpenFile(Chessboard board, BoardSquare sq) {
-        if (getColumnContents(board, sq).size() == 1) {return true;}
+        if (getColumnPieces(board, sq).size() == 1) {return true;}
         return false;
     }
 
     private boolean pawnIsDoubled(Chessboard board, BoardSquare sq) {
         int row = sq.getRow();
-        ArrayList<ChessPiece> pieces = getColumnContents(board, sq);
-        for (BoardSquare s: board.allPieces()) {
-            if ((s.getRow() + 1 == row) || (s.getRow() - 1 == row)) {
-                return true;
+        ArrayList<BoardSquare> locs = getColumnLocations(board, sq);
+        for (BoardSquare s: locs) {
+            if (board.at(s).equals(ChessPiece.PAWN) && rightColor(board, s, sq)) {
+                if ((s.getRow() + 1 == row) || (s.getRow() - 1 == row)) {
+                    return true;
+                }
             }
         }
         return false;
     }
 
-    private ArrayList<ChessPiece> getColumnContents(Chessboard board, BoardSquare sq) {
+    private boolean rightColor(Chessboard board, BoardSquare s1, BoardSquare s2) {
+        return board.colorAt(s1).equals(board.colorAt(s2));
+    }
+    private ArrayList<ChessPiece> getColumnPieces(Chessboard board, BoardSquare sq) {
         ArrayList<ChessPiece> pieces = new ArrayList<ChessPiece>();
         String columnName = sq.toString().substring(0,1);
         for (BoardSquare s: board.allPieces()) {
@@ -165,11 +174,15 @@ public class MoveEvaluator implements BoardEval {
         }
         return pieces;
     }
-}
 
-                    /*if (type.name().equals("PAWN") && (s.toString().contains("5"))) {
-                        total += -100;
-                    }
-                    else if (type.name().equals("KNIGHT") && (s.toString().startsWith("a") || s.toString().startsWith("h"))) {
-                        total += 2;
-                    }*/
+    private ArrayList<BoardSquare> getColumnLocations(Chessboard board, BoardSquare sq) {
+        ArrayList<BoardSquare> locs = new ArrayList<BoardSquare>();
+        String columnName = sq.toString().substring(0,1);
+        for (BoardSquare s: board.allPieces()) {
+            if (s.toString().contains(columnName)) {
+                locs.add(s);
+            }
+        }
+        return locs;
+    }
+}

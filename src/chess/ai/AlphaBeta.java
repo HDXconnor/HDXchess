@@ -2,16 +2,15 @@ package chess.ai;
 
 import chess.core.Chessboard;
 import chess.core.Move;
-import chess.core.PieceColor;
 
 public class AlphaBeta extends Searcher {
-    public PieceColor playerColor;
+    public int maxDepth;
 
     @Override
     public MoveScore findBestMove(Chessboard board, BoardEval eval, int depth) {
-        int parentAlpha = -1;
-        int parentBeta = 1;
-        playerColor = board.getMoverColor();
+        int parentAlpha = -10000;
+        int parentBeta = 1000;
+        maxDepth = depth;
         setup(board, eval, depth);
         MoveScore result = evalMoves(board, eval, depth, parentAlpha, parentBeta);
         tearDown();
@@ -41,7 +40,7 @@ public class AlphaBeta extends Searcher {
                 return best;
             }
         }
-        System.out.println("Best: " + best.getMove());
+        //System.out.println("Best: " + best.getMove());
         return best;
     }
 
@@ -53,6 +52,14 @@ public class AlphaBeta extends Searcher {
         } else if (depth == 0) {
             return evaluate(board, eval);
         } else {
+            if (depth == maxDepth / 2) {
+                int score = evaluate(board, eval);
+                //System.out.println("Score is : " + score);
+                if (score > 0) {
+                    //System.out.println("badscore\n");
+                    return score;
+                }
+            }
             return evalMoves(board, eval, depth, alpha, beta).getScore();
         }
     }
