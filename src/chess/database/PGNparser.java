@@ -41,6 +41,8 @@ public class PGNparser {
                     gameMoves.add(line.split("\\{")[0]);
                 }
             }
+            System.out.println(gameMoves.toString());
+            System.out.println("pgn parsed!");
             if (scanner.ioException() != null) {
                 throw scanner.ioException();
             }
@@ -51,6 +53,7 @@ public class PGNparser {
             if (scanner != null) {
                 scanner.close();
             }
+
         }
 //        // Open the file
 //        fstream = new FileInputStream(pgn_file);
@@ -97,7 +100,7 @@ public class PGNparser {
     public static void main(String[] args){
         PGNparser parser = new PGNparser();
         try {
-            parser.parsePGN("ficsDB.pgn");
+            parser.parsePGN("part1.pgn");
         } catch (IOException e) {
             e.printStackTrace();
         }
