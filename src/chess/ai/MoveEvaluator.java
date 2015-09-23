@@ -1,6 +1,7 @@
 package chess.ai;
 
 import chess.core.*;
+import chess.database.DBAccessor;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -13,6 +14,7 @@ public class MoveEvaluator implements BoardEval {
 
     private ArrayList<Chessboard> openingMoves1 = new ArrayList<Chessboard>();
     private ArrayList<Chessboard> openingMoves2 = new ArrayList<Chessboard>();
+    private DBAccessor accessor = new DBAccessor();
 
     private int openingValue = -5;
 	
@@ -93,8 +95,9 @@ public class MoveEvaluator implements BoardEval {
     private int rookChecks(Chessboard board, BoardSquare sq) {
         int tot = 0;
         if (rookInOpenFile(board, sq)) {
-            tot += 2;
+            tot += -2;
         }
+
         return tot;
     }
     private int bishopChecks(Chessboard board, BoardSquare sq){
@@ -103,6 +106,9 @@ public class MoveEvaluator implements BoardEval {
     }
     private int knightChecks(Chessboard board, BoardSquare sq){
         int tot = 0;
+        if (knightBlockingUnits(board, sq)) {
+            tot += -2;
+        }
         return tot;
     }
     private int queenChecks(Chessboard board, BoardSquare sq){
@@ -127,6 +133,13 @@ public class MoveEvaluator implements BoardEval {
 		return values.get(piece);
 	}
 
+    private boolean knightBlockingUnits(Chessboard board, BoardSquare sq) {
+        if (sq.equals(BoardSquare.A6) || sq.equals(BoardSquare.H6) || sq.equals(BoardSquare.A3) || sq.equals(BoardSquare.H3)) {
+            //System.out.println("knight blocking " + sq.toString());
+            return true;
+        }
+        return false;
+    }
     private boolean inPosition(Chessboard board, ArrayList<Chessboard> positions) {
         PieceColor color = board.getMoverColor().other();
         BitBoard boardPieces = board.allPiecesFor(color);
@@ -184,5 +197,9 @@ public class MoveEvaluator implements BoardEval {
             }
         }
         return locs;
+    }
+
+    private boolean openingInDB(Chessboard board) {
+        return accessor.checkMatch(board.toFEN());
     }
 }
