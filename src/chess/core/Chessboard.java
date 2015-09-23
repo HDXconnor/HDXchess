@@ -11,8 +11,6 @@ public class Chessboard {
 	private Move lastMove = null;
 	private int numMoves = 0;
 	private Chessboard parent;
-    HashMap<String, BoardSquare> boardSquares;
-    HashMap<Integer, String> columns;
 	
 	public Chessboard() {
 		turn = PieceColor.WHITE;
@@ -20,7 +18,7 @@ public class Chessboard {
 		this.sides = new EnumMap<PieceColor,ChessSide>(PieceColor.class);
 		sides.put(PieceColor.WHITE, ChessSide.makeWhiteStart());
 		sides.put(PieceColor.BLACK, ChessSide.makeBlackStart());
-		setupBoardSquares();
+
 		parent = null;
 	}
 	
@@ -251,32 +249,11 @@ public class Chessboard {
         return fen;
     }*/
 
-    private BoardSquare getBoardSquare(int row, int column) {
-        String col = columns.get(column);
-        String sqr = col.concat(String.valueOf(row));
-        return boardSquares.get(sqr);
-    }
 
     private void addFenSpaces(String fen, int emptySpaces) {
         if (emptySpaces != 0) {
             fen.concat(String.valueOf(emptySpaces));
         }
-    }
-
-    private void setupBoardSquares() {
-        boardSquares = new HashMap<String, BoardSquare>();
-        columns = new HashMap<Integer, String>();
-        for (BoardSquare sq : BoardSquare.class.getEnumConstants()) {
-            boardSquares.put(sq.toString(), sq);
-        }
-        columns.put(1, "A");
-        columns.put(2, "B");
-        columns.put(3, "C");
-        columns.put(4, "D");
-        columns.put(5, "E");
-        columns.put(6, "F");
-        columns.put(7, "G");
-        columns.put(8, "H");
     }
 
 	private Chessboard(Chessboard that) {

@@ -1,5 +1,7 @@
 package chess.database;
 
+import chess.core.*;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.*;
@@ -110,13 +112,33 @@ public class DBbuilder {
     private static void populateFensTable(Connection conn) throws SQLException, IOException {
         PreparedStatement query = conn.prepareStatement("SELECT moves FROM Games");//TODO gets all from move column
         ResultSet moveSet = query.executeQuery();
-        while (true) {
+        while (moveSet.next()) {
             String moves = moveSet.getString(1);
             moves = moves.split("{")[0];
-            String[] moveList = moves.split(". ");
+            String[] moveList = moves.split("\. ");
+            Chessboard currentBoard = new Chessboard();
+            for (int idx = 1; idx < moveList.length; idx++) {
+                String[] turnMoveList = moveList[idx].split(" ");
+                Move m = getMove(currentBoard, turnMoveList[0]);
+                currentBoard = currentBoard.successor(m);
+            }
             System.out.println(moveList.toString());
-            if (!moveSet.next()) {break;}
         }
+    }
+
+    private static Move getMove(Chessboard currentBoard, String move) {
+        PieceColor c = currentBoard.getMoverColor();
+        ChessPiece piece;
+        if (move.matches("\\p{javaLowerCase}}+")) {
+            piece = ChessPiece.PAWN;
+        }
+        else if (move.contains("B")) {piece = ChessPiece.BISHOP;}
+        else if (move.contains("N")) {piece = ChessPiece.KNIGHT;}
+        else if (move.contains("R")) {piece = ChessPiece.ROOK;}
+        else if (move.contains("K")) {piece = ChessPiece.KING;}
+        else {piece = ChessPiece.QUEEN;}
+
+        BoardSquare newSqr = BoardSquare.getBoardSquare(Integer.valueOf(move.substring(1,0)), move.substring(0,1));
     }
 
     private static void processQuery(Connection conn, PreparedStatement query)
