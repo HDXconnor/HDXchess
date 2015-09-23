@@ -138,7 +138,34 @@ public class DBbuilder {
         else if (move.contains("K")) {piece = ChessPiece.KING;}
         else {piece = ChessPiece.QUEEN;}
 
-        BoardSquare newSqr = BoardSquare.getBoardSquare(Integer.valueOf(move.substring(1,0)), move.substring(0,1));
+        BoardSquare newSqr = BoardSquare.getBoardSquare(Integer.valueOf(move.substring(move.length()-1, move.length())), move.substring(move.length()-2, move.length()-1));
+        BoardSquare oldSqr;
+        BoardSquare tempSquare
+        for (Move m : currentBoard.getLegalMovesTo(newSqr)) {
+            if (piece.equals(ChessPiece.PAWN)) {
+                if (c.equals(PieceColor.BLACK)) {
+                    tempSquare = BoardSquare.getBoardSquare(Integer.valueOf(move.substring(1, 0))+1, move.substring(0, 1));
+                    if (currentBoard.at(tempSquare).equals(ChessPiece.PAWN)) {
+                        oldSqr = tempSquare; break;
+                    }
+                    tempSquare = BoardSquare.getBoardSquare(Integer.valueOf(move.substring(1, 0))+2, move.substring(0, 1));
+                    if (currentBoard.at(tempSquare).equals(ChessPiece.PAWN)) {
+                        oldSqr = tempSquare; break;
+                    }
+                }
+                else {
+                    tempSquare = BoardSquare.getBoardSquare(Integer.valueOf(move.substring(1, 0))-1, move.substring(0, 1));
+                    if (currentBoard.at(tempSquare).equals(ChessPiece.PAWN)) {
+                        oldSqr = tempSquare; break;
+                    }
+                    tempSquare = BoardSquare.getBoardSquare(Integer.valueOf(move.substring(1, 0))-2, move.substring(0, 1));
+                    if (currentBoard.at(tempSquare).equals(ChessPiece.PAWN)) {
+                        oldSqr = tempSquare; break;
+                    }
+                }
+            }
+            //else if (piece.equals())
+        }
     }
 
     private static void processQuery(Connection conn, PreparedStatement query)
