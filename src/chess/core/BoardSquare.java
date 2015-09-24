@@ -136,6 +136,8 @@ public enum BoardSquare {
     public static BoardSquare getBoardSquare(int row, String column) {
         setupBoardSquares();
         String sqr = column.concat(String.valueOf(row));
+        System.out.println(sqr);
+        System.out.println(boardSquares.get(sqr));
         return boardSquares.get(sqr);
     }
 

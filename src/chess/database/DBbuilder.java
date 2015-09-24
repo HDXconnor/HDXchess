@@ -10,11 +10,12 @@ import java.util.Scanner;
 public class DBbuilder {
 
     public static void main(String[] args) {
+        DBbuilder db = new DBbuilder();
         Connection conn = openConnection();
         try {
 //                createTable(conn);
 //                populateGamesTable(conn);
-            populateFensTable(conn);
+            db.populateFensTable(conn);
 
 
         } catch(SQLException e) {
@@ -114,22 +115,26 @@ public class DBbuilder {
         ResultSet moveSet = query.executeQuery();
         while (moveSet.next()) {
             String moves = moveSet.getString(1);
-            moves = moves.split("{")[0];
-            String[] moveList = moves.split("\. ");
+            moves = moves.split("\\{")[0];
+            String[] moveList = moves.split("\\. ");
             Chessboard currentBoard = new Chessboard();
             for (int idx = 1; idx < moveList.length; idx++) {
                 String[] turnMoveList = moveList[idx].split(" ");
-                Move m = getMove(currentBoard, turnMoveList[0]);
-                currentBoard = currentBoard.successor(m);
+                Move m1 = getMove(currentBoard, turnMoveList[0]);
+                currentBoard = currentBoard.successor(m1);
+                //save current board in db
+                Move m2 = getMove(currentBoard, turnMoveList[1]);
+                currentBoard = currentBoard.successor(m2);
             }
             System.out.println(moveList.toString());
         }
     }
 
     private static Move getMove(Chessboard currentBoard, String move) {
+        if (move.contains("+") || move.contains("#")) {move = move.substring(0, move.length()-1);}
         PieceColor c = currentBoard.getMoverColor();
         ChessPiece piece;
-        if (move.matches("\\p{javaLowerCase}}+")) {
+        if (isPawn(move)) {
             piece = ChessPiece.PAWN;
         }
         else if (move.contains("B")) {piece = ChessPiece.BISHOP;}
@@ -138,34 +143,81 @@ public class DBbuilder {
         else if (move.contains("K")) {piece = ChessPiece.KING;}
         else {piece = ChessPiece.QUEEN;}
 
-        BoardSquare newSqr = BoardSquare.getBoardSquare(Integer.valueOf(move.substring(move.length()-1, move.length())), move.substring(move.length()-2, move.length()-1));
-        BoardSquare oldSqr;
-        BoardSquare tempSquare
-        for (Move m : currentBoard.getLegalMovesTo(newSqr)) {
-            if (piece.equals(ChessPiece.PAWN)) {
-                if (c.equals(PieceColor.BLACK)) {
-                    tempSquare = BoardSquare.getBoardSquare(Integer.valueOf(move.substring(1, 0))+1, move.substring(0, 1));
+        BoardSquare newSqr = getSqr(move);
+        BoardSquare oldSqr = newSqr;
+        BoardSquare tempSquare;
+        ChessPiece tempPiece;
+        if (piece.equals(ChessPiece.PAWN)) {
+            if (c.equals(PieceColor.WHITE)) {
+                System.out.println("yo");
+                tempSquare = getSqr(move, 1);
+                System.out.println(tempSquare);
+                //tempPiece = currentBoard.at(tempSquare);
+                if (currentBoard.at(tempSquare) != null) {
                     if (currentBoard.at(tempSquare).equals(ChessPiece.PAWN)) {
-                        oldSqr = tempSquare; break;
-                    }
-                    tempSquare = BoardSquare.getBoardSquare(Integer.valueOf(move.substring(1, 0))+2, move.substring(0, 1));
-                    if (currentBoard.at(tempSquare).equals(ChessPiece.PAWN)) {
-                        oldSqr = tempSquare; break;
+                        oldSqr = tempSquare;
                     }
                 }
-                else {
-                    tempSquare = BoardSquare.getBoardSquare(Integer.valueOf(move.substring(1, 0))-1, move.substring(0, 1));
-                    if (currentBoard.at(tempSquare).equals(ChessPiece.PAWN)) {
-                        oldSqr = tempSquare; break;
+                tempSquare =getSqr(move, 2);
+                if (currentBoard.at(tempSquare).equals(ChessPiece.PAWN)) {
+                    oldSqr = tempSquare;
+                }
+            }
+            else {
+                tempSquare =getSqr(move, -1);
+                if (currentBoard.at(tempSquare).equals(ChessPiece.PAWN)) {
+                    oldSqr = tempSquare;
+                }
+                tempSquare =getSqr(move, -2);
+                if (currentBoard.at(tempSquare).equals(ChessPiece.PAWN)) {
+                    System.out.println("here");
+                    oldSqr = tempSquare;
+                }
+            }
+        }
+        if (oldSqr != newSqr) {
+            for (Move m : currentBoard.getLegalMovesTo(newSqr)) {
+                if (move.length() == 3  || (move.length() == 4 && move.contains("x"))) {
+                    if (m.getPiece().equals(piece)) {
+                        oldSqr = m.getStart();
                     }
-                    tempSquare = BoardSquare.getBoardSquare(Integer.valueOf(move.substring(1, 0))-2, move.substring(0, 1));
-                    if (currentBoard.at(tempSquare).equals(ChessPiece.PAWN)) {
-                        oldSqr = tempSquare; break;
+                } else {
+                    String id = move.substring(1,2);
+                    String label = m.getStart().toString();
+                    if (label.contains(id)) {
+                        oldSqr = m.getStart();
                     }
                 }
             }
-            //else if (piece.equals())
         }
+        System.out.println(c.toString());
+        System.out.println(piece.toString());
+        System.out.println(oldSqr.toString());
+        System.out.println(newSqr.toString());
+        return new Move(c, piece, oldSqr, newSqr);
+    }
+
+    private static boolean isPawn(String move) {
+        String id = move.substring(move.length()-2, move.length()-1);
+        return id.equals(id.toLowerCase());
+    }
+
+    private static BoardSquare getSqr(String loc) {
+        System.out.println(loc);
+        String row = loc.substring(loc.length()-1, loc.length());
+        String col = loc.substring(loc.length()-2, loc.length()-1);
+        int rowInt = Integer.valueOf(row);
+        col = col.toUpperCase();
+        return BoardSquare.getBoardSquare(rowInt, col);
+    }
+
+    private static BoardSquare getSqr(String loc, int offset) {
+        System.out.println(loc + offset);
+        String row = loc.substring(loc.length()-1, loc.length());
+        String col = loc.substring(loc.length()-2, loc.length()-1);
+        int rowInt = Integer.valueOf(row);
+        col = col.toUpperCase();
+        return BoardSquare.getBoardSquare(rowInt + offset, col);
     }
 
     private static void processQuery(Connection conn, PreparedStatement query)
