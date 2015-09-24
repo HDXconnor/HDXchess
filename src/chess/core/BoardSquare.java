@@ -1,7 +1,5 @@
 package chess.core;
 
-import java.util.HashMap;
-
 public enum BoardSquare {
 	A8, B8, C8, D8, E8, F8, G8, H8,
 	A7, B7, C7, D7, E7, F7, G7, H7,
@@ -14,8 +12,7 @@ public enum BoardSquare {
 	
 	private String label;
 	private long mask;
-    private static HashMap<String, BoardSquare> boardSquares;
-    private static HashMap<Integer, String> columns;
+
 	
 	private BoardSquare() {
 		this.label = name().toLowerCase();
@@ -126,36 +123,7 @@ public enum BoardSquare {
 		return BoardSquare.valueOf(fileToStr(file) + rankToStr(rank));
 	}
 
-    public static BoardSquare getBoardSquare(int row, int column) {
-        setupBoardSquares();
-        String col = columns.get(column);
-        String sqr = col.concat(String.valueOf(row));
-        return boardSquares.get(sqr);
-    }
 
-    public static BoardSquare getBoardSquare(int row, String column) {
-        setupBoardSquares();
-        String sqr = column.concat(String.valueOf(row));
-        System.out.println(sqr);
-        System.out.println(boardSquares.get(sqr));
-        return boardSquares.get(sqr);
-    }
-
-    private static void setupBoardSquares() {
-        boardSquares = new HashMap<String, BoardSquare>();
-        columns = new HashMap<Integer, String>();
-        for (BoardSquare sq : BoardSquare.class.getEnumConstants()) {
-            boardSquares.put(sq.toString(), sq);
-        }
-        columns.put(1, "A");
-        columns.put(2, "B");
-        columns.put(3, "C");
-        columns.put(4, "D");
-        columns.put(5, "E");
-        columns.put(6, "F");
-        columns.put(7, "G");
-        columns.put(8, "H");
-    }
 
 	private static String fileToStr(int file) {
 		return Character.toString((char)('A' + file - 1));
