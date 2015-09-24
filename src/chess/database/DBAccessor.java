@@ -19,7 +19,7 @@ public class DBAccessor {
                         "SELECT * FROM GameFens WHERE GameFens MATCH 'B:" + fen + "'");
         } catch (SQLException e) {
             e.printStackTrace();
-        }
+    }
 
         return false;
     }
