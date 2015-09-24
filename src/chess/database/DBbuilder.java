@@ -196,14 +196,13 @@ public class DBbuilder {
                             return m1;
                         }
                         else if (!piece.equals(ChessPiece.QUEEN) && !piece.equals(ChessPiece.KING)) {
-                            System.out.println("here");
                             String id = move.substring(1, 2);
                             String label = m1.getStart().toString();
                             if (label.contains(id)) {
                                 return m1;
                             }
                         }
-                        else {System.out.println("here2");return m1;}
+                        else {return m1;}
                     }
                 }
             }
@@ -217,7 +216,10 @@ public class DBbuilder {
             System.out.println("iscastling");
             for (Move m : currentBoard.getLegalMoves()) {
                 if (m.isCastlingMove()) {
-                    return m;
+                    if (m.getStop().file() == 'g') {
+                        if (move.length() == 3) {return m;}
+                    }
+                    else if (move.length() == 5) {return m;}
                 }
             }
         }
