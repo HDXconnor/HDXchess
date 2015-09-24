@@ -16,7 +16,7 @@ public class MoveEvaluator implements BoardEval {
     private ArrayList<Chessboard> openingMoves2 = new ArrayList<Chessboard>();
     private DBAccessor accessor = new DBAccessor();
 
-    private int openingValue = -5;
+    private int openingValue = -2;
 	
 	public MoveEvaluator() {
         //basic values
@@ -31,7 +31,7 @@ public class MoveEvaluator implements BoardEval {
     @Override
     public int eval(Chessboard board) {
         int total = 0;
-        //if (isSolvedState(board)) {return MAX_VALUE;}
+        total += checkOpenings(board);
         for (BoardSquare s: board.allPieces()) {
             ChessPiece type = board.at(s);
             if (values.containsKey(type)) {
@@ -77,11 +77,9 @@ public class MoveEvaluator implements BoardEval {
     }
 
     private int checkOpenings(Chessboard board) {
-        if (openingOver) {return 0;}
-        if (inPosition(board, openingMoves1) || inPosition(board, openingMoves2)) {
-            return openingValue;
+        if (accessor.checkMatch(board.toFEN())) {
+            return -2;
         }
-        openingOver = true;
         return 0;
     }
 
@@ -150,11 +148,6 @@ public class MoveEvaluator implements BoardEval {
         }
         return false;
     }
-    /*private boolean isSolvedState(Chessboard board) {
-        //if pieces < numMinPieces
-        board.toFEN();
-        return false; //TODO
-    }*/
 
     private boolean rookInOpenFile(Chessboard board, BoardSquare sq) {
         if (getColumnPieces(board, sq).size() == 1) {return true;}

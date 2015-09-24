@@ -152,7 +152,7 @@ public class DBbuilder {
             BoardSquare oldSqr = newSqr;
             BoardSquare tempSquare;
             ChessPiece tempPiece;
-            if (piece.equals(ChessPiece.PAWN) && (!move.contains("x"))) {
+            /*if (piece.equals(ChessPiece.PAWN) && (!move.contains("x"))) {
                 if (c.equals(PieceColor.BLACK)) {
                     tempSquare = getSqr(move, 1);
                     if (tempSquare != null && currentBoard.at(tempSquare).equals(ChessPiece.PAWN)) {
@@ -172,11 +172,11 @@ public class DBbuilder {
                         oldSqr = tempSquare;
                     }
                 }
-            }
-            if (oldSqr.equals(newSqr)) {
+            }*/
+            //if (oldSqr.equals(newSqr)) {
                 for (Move m : currentBoard.getLegalMovesTo(newSqr)) {
                     if (m.getPiece().equals(piece)) {
-                        if (move.length() == 3 || (move.length() == 4 && move.contains("x"))) {
+                        if (move.length() == 3 || move.length() == 2 || (move.length() == 4 && move.contains("x"))) {
                             return m;
                         }
                         else if (!piece.equals(ChessPiece.QUEEN) && !piece.equals(ChessPiece.KING)) {
@@ -205,7 +205,7 @@ public class DBbuilder {
                         else {return m1;}
                     }
                 }
-            }
+            //}
             System.out.println(c.toString());
             System.out.println(piece.toString());
             System.out.println(oldSqr.toString());
