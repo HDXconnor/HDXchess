@@ -18,7 +18,6 @@ public class BoardSquareAccessor {
 
     public static BoardSquare getBoardSquare(int row, String column) {
         String sqr = column.concat(String.valueOf(row));
-        System.out.println("Sqr: " + sqr);
         return boardSquares.get(sqr);
     }
 
